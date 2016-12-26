@@ -4,7 +4,7 @@ TDIR=./test
 OUTPUT=simpleObserver
 TESTS=tests
 CC=gcc
-CFLAGS=-I$(IDIR)
+CFLAGS=-I$(IDIR) -lpthread
 SRC=$(SDIR)/*.c
 
 .PHONY: build clean help test

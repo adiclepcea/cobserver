@@ -4,15 +4,17 @@
 
 typedef struct subscriber{
   int id;
-  void (*process)(struct subscriber *sub,int count, void *args);
-  void (*call)(struct subscriber *sub,int count, void *args);
+  void (*process)(struct subscriber *sub);
+  void (*call)(struct subscriber *sub,size_t size, void *data);
   void (*end)(struct subscriber *sub);
-  void (*init)(struct subscriber *sub, 
-	       void (*process)(struct subscriber *sub,int count, void *args));
+  void (*init)(struct subscriber *sub,
+	       void (*process)(struct subscriber *sub));
   void (*runner)(void*);
   pthread_t thread;
   pthread_cond_t cond;
   pthread_mutex_t mutex;
+  void *data;
+  size_t dataSize;
   volatile bool stop;
   volatile bool called;
 } Subscriber;
@@ -22,8 +24,8 @@ typedef struct subscriberThreadData{
   void *data;
 } SubscriberThreadData;
 
-void initSubscriber (struct subscriber *sub, 
-	       void (*call)(struct subscriber *sub,int count, void *args));
+void initSubscriber (struct subscriber *sub,
+	       void (*process)(struct subscriber *sub));
 
 typedef struct subscriberItem{
   Subscriber *item;
@@ -38,10 +40,10 @@ typedef struct publisher{
   void (*init)(struct publisher *pub);
   void (*subscribe)(struct publisher *pub, Subscriber *subscriber);
   void (*unsubscribe)(struct publisher *pub, Subscriber *subscriber);
-  void (*publish)(struct publisher *pub,int count, void* args);
+  void (*publish)(struct publisher *pub,size_t size, void* data);
 } Publisher;
 
 void subscribeToPublisher(struct publisher *pub, Subscriber *s);
 void unsubscribeFromPublisher(struct publisher *pub,Subscriber *s);
-void publish(struct publisher *pub,int count, void *args);
+void publish(struct publisher *pub,size_t size, void *data);
 void initPublisher(struct publisher *pub);

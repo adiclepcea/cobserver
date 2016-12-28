@@ -6,8 +6,6 @@
 
 Publisher publisher;
 
-static int nextSubscriberId;
-
 void endSubscriber(struct subscriber *sub){
   printf("Ending %d\n", sub->id);
   sub->stop = true;
@@ -134,7 +132,6 @@ void unsubscribeFromPublisher(struct publisher *pub, Subscriber *s){
 }
 
 void publish(struct publisher *pub, size_t size, void *data){
-  int i;
 
   SubscriberItem *si = pub->subscribers;
 

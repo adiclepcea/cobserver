@@ -4,10 +4,10 @@ TDIR=./test
 OUTPUT=simpleObserver
 TESTS=tests
 CC=gcc
-CFLAGS=-I$(IDIR) -lpthread
+CFLAGS=-I$(IDIR) -lpthread -Wall -pedantic
 SRC=$(SDIR)/*.c
 
-.PHONY: build clean help test
+.PHONY: build clean help test static
 
 help:
 	@echo "make build   - build the program"
@@ -16,6 +16,10 @@ help:
 
 build:
 	@$(CC) -o $(OUTPUT) $(SRC) $(CFLAGS)
+
+static:
+	@$(CC) -c $(SDIR)/observer.c -o $(OUTPUT).o $(CFLAGS)
+	ar -cqv libcobserver.a *.o
 
 test:
 	#@echo "Building tests"

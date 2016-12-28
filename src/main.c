@@ -5,7 +5,7 @@
 
 void processSubscriber(struct subscriber *sub){
   if(sub->data && sub->dataSize>0){
-    printf("%d has %s data\n",sub->id,sub->data);
+    printf("%d has %s data\n",sub->id,(char*)sub->data);
   }else{
     printf("%d was called\n", sub->id);
   }

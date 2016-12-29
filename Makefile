@@ -4,7 +4,7 @@ TDIR=./test
 OUTPUT=simpleObserver
 TESTS=tests
 CC=gcc
-CFLAGS=-I$(IDIR) -lpthread -Wall -pedantic -std=c99
+CFLAGS=-I$(IDIR) -lpthread -Wall -pedantic -std=gnu99
 SRC=$(SDIR)/*.c
 
 .PHONY: build clean help test static
@@ -19,6 +19,7 @@ build:
 
 static:
 	@$(CC) -c $(SDIR)/observer.c -o $(OUTPUT).o $(CFLAGS)
+	@$(CC) -c $(SDIR)/queue.c -o queue.o $(CFLAGS)
 	ar -cqv libcobserver.a *.o
 
 test:

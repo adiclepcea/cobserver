@@ -1,3 +1,4 @@
+
 #include "observer.h"
 #include "stdlib.h"
 #include <stdio.h>
@@ -8,6 +9,11 @@ Publisher publisher;
 
 void endSubscriber(struct subscriber *sub){
   printf("Ending %d\n", sub->id);
+  void *item;
+  while((item=sub->queue.dequeue(&sub->queue))){
+    free(item);
+    item = NULL;
+  }
   sub->stop = true;
   sub->call(sub, 0, NULL);
 }
@@ -17,26 +23,20 @@ void endSubscriber(struct subscriber *sub){
 //has not finished yet so we ignore.
 //you could use a buffer if you want
 void call(struct subscriber *sub, size_t size, void *data){
+  if(data && sub->queue.noOfItems<20){
+    void *item = malloc(size);
+    memcpy(item, data, size);
+    sub->queue.enqueue(&sub->queue,item);
+    item = NULL;
+  }
 
   //if we try to stop then we wait for the lock
   if(sub->stop)
     pthread_mutex_lock(&sub->mutex);
-
   //else we just try the lock
   else if(pthread_mutex_trylock(&sub->mutex)!=0)
     return;
 
-  if(sub->data){
-    free(sub->data);
-    sub->data = NULL;
-  }
-
-  if(size>0 && data){
-    sub->data = malloc(size);
-    memcpy(sub->data, data, size);
-  }
-
-  sub->dataSize = size;
   sub->called = true;
 
   pthread_cond_signal(&sub->cond);
@@ -75,7 +75,7 @@ void initSubscriber(struct subscriber *sub,
   sub->end = endSubscriber;
   sub->stop = false;
   sub->called = false;
-  sub->data = NULL;
+  initQueue(&sub->queue);
   pthread_mutex_init(&sub->mutex,NULL);
   pthread_cond_init(&sub->cond, NULL);
   pthread_create(&sub->thread, NULL, runnerSub, (void *)sub);
@@ -109,6 +109,7 @@ void subscribeToPublisher(struct publisher *pub,Subscriber *s){
 }
 
 void unsubscribeFromPublisher(struct publisher *pub, Subscriber *s){
+
   struct subscriberItem *si = pub->subscribers;
   struct subscriberItem *parent = NULL;
 
@@ -116,13 +117,13 @@ void unsubscribeFromPublisher(struct publisher *pub, Subscriber *s){
     parent = si;
     si = si->next;
   }
-  if(si->item==s){
 
+  if(si->item==s){
     si->item->end(si->item);
     if(si==pub->subscribers){
       pub->subscribers = si->next;
     }else if(parent!=NULL){
-      parent->next = NULL;
+      parent->next = si->next;
     }
 
     free(si);
@@ -139,4 +140,5 @@ void publish(struct publisher *pub, size_t size, void *data){
     si->item->call(si->item, size, data);
     si=si->next;
   }
+  
 }
